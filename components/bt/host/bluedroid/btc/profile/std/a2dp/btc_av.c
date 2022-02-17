@@ -165,6 +165,7 @@ static const btc_sm_handler_t btc_av_state_handlers[] = {
 
 static void btc_av_event_free_data(btc_sm_event_t event, void *p_data);
 static void btc_av_event_open_evt(void *p_data);
+static void btc_av_event_reconfig_evt(void *p_data);
 
 /*************************************************************************
 ** Extern functions
@@ -396,6 +397,10 @@ static BOOLEAN btc_av_state_idle_handler(btc_sm_event_t event, void *p_data)
         }
 #endif /* BTC_AV_SRC_INCLUDED */
         btc_rc_handler(event, p_data);
+        break;
+
+    case BTA_AV_RECONFIG_EVT:
+        btc_av_event_reconfig_evt(p_data);
         break;
 
     case BTA_AV_OPEN_EVT:
@@ -1037,6 +1042,18 @@ static void btc_av_event_open_evt(void *p_data)
         }
     }
     btc_queue_advance();
+}
+
+static void btc_av_event_reconfig_evt(void *p_data) {
+    tBTA_AV *p_av = (tBTA_AV *)p_data;
+    if ((btc_av_cb.flags & BTC_AV_FLAG_PENDING_START) &&
+            (p_av->reconfig.status == BTA_AV_SUCCESS)) {
+        BTC_TRACE_WARNING("%s: reconfig done BTA_AVstart()", __func__);
+        BTA_AvStart();
+    } else if (btc_av_cb.flags & BTC_AV_FLAG_PENDING_START) {
+        btc_av_cb.flags &= ~BTC_AV_FLAG_PENDING_START;
+        btc_a2dp_control_command_ack(ESP_A2D_MEDIA_CTRL_ACK_FAILURE);
+    }
 }
 
 /*******************************************************************************
