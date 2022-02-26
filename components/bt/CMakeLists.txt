@@ -600,6 +600,10 @@ if(CONFIG_BT_ENABLED)
 
 endif()
 
+if(CONFIG_BT_A2DP_APTX_DECODER)
+    list(APPEND srcs "host/bluedroid/stack/a2dp/a2dp_vendor_aptx.c")
+endif()
+
 # requirements can't depend on config
 idf_component_register(SRCS "${srcs}"
                 INCLUDE_DIRS "${include_dirs}"
